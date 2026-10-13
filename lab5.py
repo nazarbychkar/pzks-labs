@@ -27,6 +27,39 @@ def get_ops(n, out):
     return out
 
 
+def simulate(root, tc=1):
+    """Розклад дерева на ПЕ. Повертає (розклад, T1, Tp). Вузли мають id (lab2.collect)."""
+    ops = get_ops(root, [])
+    if not ops:
+        return [], 0, 0
+    parent = {c.id: o for o in ops for c in kids(o)}
+    pr = {}
+    def prio(o):                       # пріоритет = критичний шлях до кореня
+        if o.id not in pr:
+            pr[o.id] = T[o.op] + (prio(parent[o.id]) if o.id in parent else 0)
+        return pr[o.id]
+
+    free, fin, pe_of, sched = [0] * P, {}, {}, []
+    for o in sorted(ops, key=lambda o: (-prio(o), o.id)):
+        best = None
+        for pe in range(P):            # ПЕ з найранішим завершенням
+            ready = max([fin[c.id] + hops(pe_of[c.id], pe) * tc for c in kids(o)], default=0)
+            start = max(free[pe], ready)
+            if best is None or start + T[o.op] < best[0]:
+                best = (start + T[o.op], start, pe)
+        end, start, pe = best
+        free[pe], fin[o.id], pe_of[o.id] = end, end, pe
+        sched.append((start, end, pe, o))
+    return sched, sum(T[o.op] for o in ops), max(fin.values())
+
+
+def print_schedule(sched):
+    nm = lambda n: n.label if n.op is None else f"t{n.id}"
+    for s, e, pe, o in sorted(sched, key=lambda x: (x[0], x[3].id)):
+        f = f"-{nm(o.l)}" if o.op == 'neg' else f"{nm(o.l)} {o.op} {nm(o.r)}"
+        print(f"[{s:>3}..{e:>3})  PE({pe // C},{pe % C})  t{o.id} = {f}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('expr')
@@ -41,38 +74,11 @@ def main():
     if res['errors']:
         print("Вираз некоректний:", *res['errors'], sep="\n  - ")
         return
-    ops = get_ops(res['root'], [])
-    if not ops:
+    sched, T1, Tp = simulate(res['root'], a.tc)
+    if not sched:
         return print("У виразі немає операцій.")
-
-    # пріоритет = довжина критичного шляху до кореня
-    parent = {c.id: o for o in ops for c in kids(o)}
-    pr = {}
-    def prio(o):
-        if o.id not in pr:
-            pr[o.id] = T[o.op] + (prio(parent[o.id]) if o.id in parent else 0)
-        return pr[o.id]
-
-    # розподіл: кожну операцію - на ПЕ, де вона завершиться найраніше
-    free, fin, pe_of, sched = [0] * P, {}, {}, []
-    for o in sorted(ops, key=lambda o: (-prio(o), o.id)):
-        best = None
-        for pe in range(P):
-            ready = max([fin[c.id] + hops(pe_of[c.id], pe) * a.tc for c in kids(o)], default=0)
-            start = max(free[pe], ready)
-            if best is None or start + T[o.op] < best[0]:
-                best = (start + T[o.op], start, pe)
-        end, start, pe = best
-        free[pe], fin[o.id], pe_of[o.id] = end, end, pe
-        sched.append((start, end, pe, o))
-
-    nm = lambda n: n.label if n.op is None else f"t{n.id}"
     print(f"Вираз: {a.expr}\nПаралельна форма: {res['form']}\n")
-    for s, e, pe, o in sorted(sched, key=lambda x: (x[0], x[3].id)):
-        f = f"-{nm(o.l)}" if o.op == 'neg' else f"{nm(o.l)} {o.op} {nm(o.r)}"
-        print(f"[{s:>3}..{e:>3})  PE({pe // C},{pe % C})  t{o.id} = {f}")
-
-    T1, Tp = sum(T[o.op] for o in ops), max(fin.values())
+    print_schedule(sched)
     S = T1 / Tp
     print(f"\nT1 = {T1}  Tp = {Tp}  S = {S:.2f}  E = S/P = {S / P:.2f}  (P={P}, тор {R}x{C}, tc={a.tc})")
 
