@@ -43,7 +43,7 @@ def tokenize(s):
     return toks
 
 
-# AST: ('num', Fraction) | ('var', str) | ('sum', [(±1, node)]) | ('prod', [(±1, node)])
+# Abstract Syntax Tree (AST): ('num', Fraction) | ('var', str) | ('sum', [(±1, node)]) | ('prod', [(±1, node)])
 class Parser:
     def __init__(self, toks):
         self.t, self.i = toks, 0
@@ -452,3 +452,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # Тест: (a+b)+c/d+g+(k/l+m+n)

@@ -214,14 +214,15 @@ class ExpressionAnalyzer:
 
 if __name__ == "__main__":
     test_expressions = [
-        "-a ++ b - 2v*func((t+2 -, sin(x/*2.01.2), )/8(-)**",
-        "*a + nb -",
-        "a ++ nb /* k -+/ g",
-        "x + var1 + var_2 + var#4 + 6var_ + $7",
-        "0.71/0.72.3 + .3 + 127.0.0.1*8. + 6.07ab",
-        ")a+b( -(g+h)(g-k))*()) + (-b(t-2*x*(5)",
-        "2(t) - f2(t) + g()/h(2, )*func(-t/q, f(4-t), (x+2)*(y-2))",
-        "1239___++a_var(()++(#m_var) 21+3"
+        # "-a ++ b - 2v*func((t+2 -, sin(x/*2.01.2), )/8(-)**",
+        # "*a + nb -",
+        # "a ++ nb /* k -+/ g",
+        # "x + var1 + var_2 + var#4 + 6var_ + $7",
+        # "0.71/0.72.3 + .3 + 127.0.0.1*8. + 6.07ab",
+        # ")a+b( -(g+h)(g-k))*()) + (-b(t-2*x*(5)",
+        # "2(t) - f2(t) + g()/h(2, )*func(-t/q, f(4-t), (x+2)*(y-2))",
+        # "1239___++a_var(()++(#m_var) 21+3"
+        "-a+b"
     ]
 
     for idx, test_expr in enumerate(test_expressions, 1):

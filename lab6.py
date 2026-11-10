@@ -1,6 +1,8 @@
 """ЛР6, варіант 23 (матрична система, 9 ПЕ, тор 3x3): вибір оптимальної форми виразу.
 Будуються еквівалентні форми, кожна моделюється (lab5.simulate), обирається найкраща.
-Запуск: python lab6.py "a-b*(k-t)-(f-g)*(f-5.9-q)-(f+g)/(d+q-w)" [--tc 1] [--times "+=1,*=2,/=4"]"""
+Запуск: python lab6.py "(a+2)*(a+3) + (b-b)" [--tc 1] [--times "+=1,*=2,/=4"]"""
+# a-b*(k-t)-(f-g)*(f-5.9-q)-(f+g)/(d+q-w)
+
 import argparse
 from fractions import Fraction
 from lab1 import ExpressionAnalyzer
@@ -89,8 +91,8 @@ def main():
         lv = {}
         for o in ops:
             lv[o.level] = lv.get(o.level, 0) + 1
-        sched, T1, Tp = lab5.simulate(root, a.tc)
-        rows.append(dict(name=name, text=text, root=root, sched=sched, n=len(ops), h=root.level,
+        sched, T1, Tp, tr = lab5.simulate_full(root, a.tc)
+        rows.append(dict(tr=tr, name=name, text=text, root=root, sched=sched, n=len(ops), h=root.level,
                          w=max(lv.values()), T1=T1, Tp=Tp, S=T1 / Tp, E=T1 / Tp / lab5.P))
     if not rows:
         return print("У виразі немає операцій.")
@@ -106,7 +108,7 @@ def main():
         print(f"  {i}. {r['text']}")
 
     print(f"\nОптимальна форма: {best['name']}\n")
-    lab5.print_schedule(best['sched'])
+    lab5.print_schedule(best['sched'], best['tr'])
 
     print("\nВплив часу передачі tc (найкраща форма):")
     for tc in range(4):
